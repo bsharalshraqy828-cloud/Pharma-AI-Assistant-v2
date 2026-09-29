@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pharma AI Assistant</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#172033}
+header{background:#1769aa;color:white;padding:25px;text-align:center}
+main{max-width:700px;margin:20px auto;padding:15px}
+.card{background:white;border-radius:16px;padding:20px;margin-bottom:18px;box-shadow:0 3px 12px #0001}
+button{border:0;border-radius:10px;padding:13px 18px;margin:6px;cursor:pointer;font-size:16px}
+.option{display:block;width:100%;background:#eef3f8;text-align:right}
+.option:hover{background:#dcecff}
+.primary{background:#1769aa;color:white}
+.good{color:green;font-weight:bold}
+.bad{color:#c62828;font-weight:bold}
+.bar{height:12px;background:#ddd;border-radius:10px;overflow:hidden}
+.fill{height:100%;background:#1769aa;width:0}
+.hidden{display:none}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>💊 Pharma AI Assistant</h1>
+<p>مدرس الصيدلة الذكي</p>
+</header>
+
+<main>
+
+<div class="card">
+<h2>مرحبًا بك 👋</h2>
+<p>
+سأشرح لك، أختبرك، أكتشف أخطاءك، وأعيد مراجعة النقاط التي تحتاج إليها.
+</p>
+
+<button class="primary" onclick="startQuiz()">ابدأ اختبار الصيدلة</button>
+</div>
+
+<div class="card">
+<h3>📊 مستوى الإتقان</h3>
+<p id="mastery">0%</p>
+<div class="bar"><div id="fill" class="fill"></div></div>
+</div>
+
+<div id="quiz" class="card hidden">
+<h3 id="question"></h3>
+<div id="options"></div>
+<p id="feedback"></p>
+<button id="next" class="primary hidden" onclick="nextQuestion()">السؤال التالي</button>
+</div>
+
+<div id="review" class="card hidden">
+<h3>📚 نقاط تحتاج إلى مراجعة</h3>
+<p id="weak"></p>
+</div>
+
+</main>
+
+<script>
+
+const questions = [
+
+{
+q:"ما هو Mechanism of Action للأموكسيسيلين؟",
+options:[
+"تثبيط تصنيع جدار الخلية البكتيرية",
+"تثبيط تصنيع البروتين",
+"تثبيط تصنيع DNA",
+"تثبيط تصنيع حمض الفوليك"
+],
+answer:0,
+topic:"Antibiotics"
+},
+
+{
+q:"أي عضو يُعد الموقع الرئيسي لمعظم First-pass metabolism؟",
+options:[
+"الكبد",
+"الرئة",
+"الطحال",
+"القلب"
+],
+answer:0,
+topic:"Pharmacokinetics"
+},
+
+{
+q:"ما المقصود بـ Half-life؟",
+options:[
+"الوقت اللازم لانخفاض تركيز الدواء إلى النصف",
+"الوقت اللازم لامتصاص الدواء بالكامل",
+"الوقت اللازم لإخراج الدواء بالكامل",
+"الوقت اللازم لبدء تأثير الدواء"
+],
+answer:0,
+topic:"Pharmacokinetics"
+},
+
+{
+q:"أي مجموعة وظيفية تتميز غالبًا بامتصاص قوي في IR قرب 3200–3600 cm⁻¹؟",
+options:[
+"O-H",
+"C=O",
+"C=C",
+"C-Cl"
+],
+answer:0,
+topic:"Medicinal Chemistry"
+}
+
+];
+
+let current=0;
+let score=0;
+let mistakes=JSON.parse(localStorage.getItem("mistakes")||"{}");
+
+function startQuiz(){
+ current=0;
+ score=0;
+ document.getElementById("quiz").classList.remove("hidden");
+ document.getElementById("review").classList.add("hidden");
+ showQuestion();
+}
+
+function showQuestion(){
+
+ let q=questions[current];
+
+ document.getElementById("question").textContent =
+ (current+1)+" / "+questions.length+" — "+q.q;
+
+ let box=document.getElementById("options");
+ box.innerHTML="";
+
+ q.options.forEach((option,i)=>{
+
+   let b=document.createElement("button");
+   b.className="option";
+   b.textContent=option;
+
+   b.onclick=()=>answer(i);
+
+   box.appendChild(b);
+ });
+
+ document.getElementById("feedback").textContent="";
+ document.getElementById("next").classList.add("hidden");
+}
+
+function answer(choice){
+
+ let q=questions[current];
+
+ document.querySelectorAll(".option").forEach(b=>b.disabled=true);
+
+ if(choice===q.answer){
+
+   score++;
+
+   document.getElementById("feedback").innerHTML=
+   "<span class='good'>✅ إجابة صحيحة!</span><br>ممتاز، سننتقل إلى السؤال التالي.";
+
+ }else{
+
+   mistakes[q.topic]=(mistakes[q.topic]||0)+1;
+
+   localStorage.setItem("mistakes",JSON.stringify(mistakes));
+
+   document.getElementById("feedback").innerHTML=
+   "<span class='bad'>❌ إجابة غير صحيحة.</span><br>"+
+   "الإجابة الصحيحة هي: <b>"+q.options[q.answer]+"</b><br>"+
+   "📌 سجّلت أن هذا الموضوع يحتاج إلى مراجعة: "+q.topic;
+ }
+
+ document.getElementById("next").classList.remove("hidden");
+
+ updateMastery();
+}
+
+function nextQuestion(){
+
+ current++;
+
+ if(current>=questions.length){
+   finish();
+   return;
+ }
+
+ showQuestion();
+}
+
+function finish(){
+
+ document.getElementById("question").textContent="🎉 انتهى الاختبار";
+
+ document.getElementById("options").innerHTML=
+ "<p>نتيجتك: <b>"+score+" / "+questions.length+"</b></p>";
+
+ document.getElementById("feedback").innerHTML=
+ "سأستخدم أخطاءك لتحديد المواضيع التي تحتاج إلى مراجعة.";
+
+ document.getElementById("next").classList.add("hidden");
+
+ showWeakTopics();
+ updateMastery();
+}
+
+function showWeakTopics(){
+
+ let list=Object.keys(mistakes);
+
+ let text=list.length
+ ? list.map(x=>"🔴 "+x+" — أخطاء: "+mistakes[x]).join("<br>")
+ : "🟢 لا توجد نقاط ضعف مسجلة حتى الآن.";
+
+ document.getElementById("weak").innerHTML=text;
+ document.getElementById("review").classList.remove("hidden");
+}
+
+function updateMastery(){
+
+ let total=questions.length;
+
+ let percentage=Math.round((score/total)*100);
+
+ document.getElementById("mastery").textContent=percentage+"%";
+
+ document.getElementById("fill").style.width=percentage+"%";
+}
+
+</script>
+
+</body>
+</html>
