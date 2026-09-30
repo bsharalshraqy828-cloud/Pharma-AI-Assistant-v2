@@ -4,20 +4,160 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Pharma AI Assistant</title>
+
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#172033}
-header{background:#1769aa;color:white;padding:25px;text-align:center}
-main{max-width:700px;margin:20px auto;padding:15px}
-.card{background:white;border-radius:16px;padding:20px;margin-bottom:18px;box-shadow:0 3px 12px #0001}
-button{border:0;border-radius:10px;padding:13px 18px;margin:6px;cursor:pointer;font-size:16px}
-.option{display:block;width:100%;background:#eef3f8;text-align:right}
-.option:hover{background:#dcecff}
-.primary{background:#1769aa;color:white}
-.good{color:green;font-weight:bold}
-.bad{color:#c62828;font-weight:bold}
-.bar{height:12px;background:#ddd;border-radius:10px;overflow:hidden}
-.fill{height:100%;background:#1769aa;width:0}
-.hidden{display:none}
+*{box-sizing:border-box}
+
+body{
+margin:0;
+font-family:Arial,sans-serif;
+background:#f4f7fb;
+color:#172033
+}
+
+header{
+background:#1769aa;
+color:white;
+padding:25px 15px;
+text-align:center
+}
+
+header h1{margin:0 0 8px}
+
+main{
+max-width:750px;
+margin:20px auto;
+padding:15px
+}
+
+.card{
+background:white;
+border-radius:16px;
+padding:20px;
+margin-bottom:18px;
+box-shadow:0 3px 12px #0001
+}
+
+button{
+border:0;
+border-radius:10px;
+padding:13px 18px;
+margin:6px;
+cursor:pointer;
+font-size:16px
+}
+
+button:disabled{
+opacity:.6;
+cursor:not-allowed
+}
+
+.primary{
+background:#1769aa;
+color:white
+}
+
+.option{
+display:block;
+width:100%;
+background:#eef3f8;
+text-align:right
+}
+
+.option:hover{
+background:#dcecff
+}
+
+.good{
+color:green;
+font-weight:bold
+}
+
+.bad{
+color:#c62828;
+font-weight:bold
+}
+
+.bar{
+height:12px;
+background:#ddd;
+border-radius:10px;
+overflow:hidden
+}
+
+.fill{
+height:100%;
+background:#1769aa;
+width:0;
+transition:.4s
+}
+
+.hidden{
+display:none
+}
+
+/* واجهة الوكيل */
+
+.menu{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px
+}
+
+.menu button{
+margin:0;
+background:#eef3f8
+}
+
+.menu button:hover{
+background:#dcecff
+}
+
+.chat{
+height:360px;
+overflow-y:auto;
+background:#f7f9fc;
+border-radius:12px;
+padding:12px;
+margin-bottom:10px
+}
+
+.message{
+padding:10px 13px;
+border-radius:12px;
+margin:8px 0;
+max-width:90%;
+line-height:1.6
+}
+
+.bot{
+background:#e5f1ff;
+margin-left:auto
+}
+
+.user{
+background:#1769aa;
+color:white;
+margin-right:auto
+}
+
+.chatInput{
+display:flex;
+gap:8px
+}
+
+.chatInput input{
+flex:1;
+border:1px solid #ccd5df;
+border-radius:10px;
+padding:13px;
+font-size:16px
+}
+
+.small{
+color:#667085;
+font-size:14px
+}
 </style>
 </head>
 
@@ -30,38 +170,165 @@ button{border:0;border-radius:10px;padding:13px 18px;margin:6px;cursor:pointer;f
 
 <main>
 
+<!-- الصفحة الرئيسية -->
+
 <div class="card">
 <h2>مرحبًا بك 👋</h2>
+
 <p>
-سأشرح لك، أختبرك، أكتشف أخطاءك، وأعيد مراجعة النقاط التي تحتاج إليها.
+أنا مساعدك الذكي في دراسة الصيدلة والعمل الصيدلي.
+يمكنني مساعدتك في التعلم، الاختبارات، معلومات الأدوية
+ومراجعة المواضيع التي تحتاج إليها.
 </p>
 
-<button class="primary" onclick="startQuiz()">ابدأ اختبار الصيدلة</button>
+<div class="menu">
+<button onclick="openSection('chat')">🤖 المحادثة الذكية</button>
+<button onclick="startQuiz()">🧪 اختبار الصيدلة</button>
+<button onclick="showDrugInfo()">💊 معلومات الأدوية</button>
+<button onclick="showStudy()">📚 الدراسة</button>
 </div>
+</div>
+
+
+<!-- مستوى الإتقان -->
 
 <div class="card">
 <h3>📊 مستوى الإتقان</h3>
+
 <p id="mastery">0%</p>
-<div class="bar"><div id="fill" class="fill"></div></div>
+
+<div class="bar">
+<div id="fill" class="fill"></div>
 </div>
+</div>
+
+
+<!-- المحادثة -->
+
+<div id="chatSection" class="card hidden">
+
+<h3>🤖 Pharma AI Assistant</h3>
+
+<div id="chat" class="chat">
+
+<div class="message bot">
+مرحبًا 👋 أنا Pharma AI Assistant.<br>
+اسألني عن دواء، موضوع صيدلي، أو سؤال دراسي.
+</div>
+
+</div>
+
+<div class="chatInput">
+
+<input
+id="chatInput"
+placeholder="اكتب سؤالك هنا..."
+onkeydown="if(event.key==='Enter') sendMessage()"
+>
+
+<button class="primary" onclick="sendMessage()">إرسال</button>
+
+</div>
+
+<p class="small">
+⚠️ المعلومات التعليمية لا تغني عن تقييم الطبيب أو الصيدلي المسؤول.
+</p>
+
+</div>
+
+
+<!-- الاختبار -->
 
 <div id="quiz" class="card hidden">
+
 <h3 id="question"></h3>
+
 <div id="options"></div>
+
 <p id="feedback"></p>
-<button id="next" class="primary hidden" onclick="nextQuestion()">السؤال التالي</button>
+
+<button
+id="next"
+class="primary hidden"
+onclick="nextQuestion()">
+السؤال التالي
+</button>
+
 </div>
 
+
+<!-- المراجعة -->
+
 <div id="review" class="card hidden">
+
 <h3>📚 نقاط تحتاج إلى مراجعة</h3>
+
 <p id="weak"></p>
+
+</div>
+
+
+<!-- معلومات الأدوية -->
+
+<div id="drugSection" class="card hidden">
+
+<h3>💊 معلومات الأدوية</h3>
+
+<p>
+يمكنك كتابة اسم الدواء في المحادثة الذكية للحصول على شرح
+تعليمي منظم.
+</p>
+
+<p>
+مثال:
+<b>اشرح لي الأموكسيسيلين</b>
+</p>
+
+<button class="primary" onclick="openSection('chat')">
+ابدأ المحادثة
+</button>
+
+</div>
+
+
+<!-- الدراسة -->
+
+<div id="studySection" class="card hidden">
+
+<h3>📚 وضع الدراسة</h3>
+
+<p>
+اختر موضوعًا للدراسة:
+</p>
+
+<button onclick="studyTopic('Antibiotics')">
+💊 Antibiotics
+</button>
+
+<button onclick="studyTopic('Pharmacokinetics')">
+🧬 Pharmacokinetics
+</button>
+
+<button onclick="studyTopic('Medicinal Chemistry')">
+⚗️ Medicinal Chemistry
+</button>
+
+<button onclick="studyTopic('Pharmacology')">
+🧠 Pharmacology
+</button>
+
 </div>
 
 </main>
 
+
 <script>
 
-const questions = [
+/* =========================
+   أسئلة اختبار الصيدلة
+========================= */
+
+const questions=[
 
 {
 q:"ما هو Mechanism of Action للأموكسيسيلين؟",
@@ -113,122 +380,406 @@ topic:"Medicinal Chemistry"
 
 ];
 
+
 let current=0;
 let score=0;
-let mistakes=JSON.parse(localStorage.getItem("mistakes")||"{}");
+
+let mistakes=
+JSON.parse(localStorage.getItem("mistakes")||"{}");
+
+
+/* =========================
+   فتح الأقسام
+========================= */
+
+function hideAll(){
+
+document.getElementById("chatSection").classList.add("hidden");
+document.getElementById("quiz").classList.add("hidden");
+document.getElementById("review").classList.add("hidden");
+document.getElementById("drugSection").classList.add("hidden");
+document.getElementById("studySection").classList.add("hidden");
+
+}
+
+
+function openSection(section){
+
+hideAll();
+
+if(section==="chat")
+document.getElementById("chatSection").classList.remove("hidden");
+
+}
+
+
+/* =========================
+   الاختبار
+========================= */
 
 function startQuiz(){
- current=0;
- score=0;
- document.getElementById("quiz").classList.remove("hidden");
- document.getElementById("review").classList.add("hidden");
- showQuestion();
+
+hideAll();
+
+current=0;
+score=0;
+
+document.getElementById("quiz").classList.remove("hidden");
+
+showQuestion();
+
 }
+
 
 function showQuestion(){
 
- let q=questions[current];
+let q=questions[current];
 
- document.getElementById("question").textContent =
- (current+1)+" / "+questions.length+" — "+q.q;
+document.getElementById("question").textContent=
+(current+1)+" / "+questions.length+" — "+q.q;
 
- let box=document.getElementById("options");
- box.innerHTML="";
+let box=document.getElementById("options");
 
- q.options.forEach((option,i)=>{
+box.innerHTML="";
 
-   let b=document.createElement("button");
-   b.className="option";
-   b.textContent=option;
+q.options.forEach((option,i)=>{
 
-   b.onclick=()=>answer(i);
+let b=document.createElement("button");
 
-   box.appendChild(b);
- });
+b.className="option";
 
- document.getElementById("feedback").textContent="";
- document.getElementById("next").classList.add("hidden");
+b.textContent=option;
+
+b.onclick=()=>answer(i);
+
+box.appendChild(b);
+
+});
+
+document.getElementById("feedback").textContent="";
+
+document.getElementById("next").classList.add("hidden");
+
 }
+
 
 function answer(choice){
 
- let q=questions[current];
+let q=questions[current];
 
- document.querySelectorAll(".option").forEach(b=>b.disabled=true);
+document.querySelectorAll(".option")
+.forEach(b=>b.disabled=true);
 
- if(choice===q.answer){
 
-   score++;
+if(choice===q.answer){
 
-   document.getElementById("feedback").innerHTML=
-   "<span class='good'>✅ إجابة صحيحة!</span><br>ممتاز، سننتقل إلى السؤال التالي.";
+score++;
 
- }else{
+document.getElementById("feedback").innerHTML=
+"<span class='good'>✅ إجابة صحيحة!</span><br>"+
+"ممتاز، أحسنت.";
 
-   mistakes[q.topic]=(mistakes[q.topic]||0)+1;
+}else{
 
-   localStorage.setItem("mistakes",JSON.stringify(mistakes));
+mistakes[q.topic]=(mistakes[q.topic]||0)+1;
 
-   document.getElementById("feedback").innerHTML=
-   "<span class='bad'>❌ إجابة غير صحيحة.</span><br>"+
-   "الإجابة الصحيحة هي: <b>"+q.options[q.answer]+"</b><br>"+
-   "📌 سجّلت أن هذا الموضوع يحتاج إلى مراجعة: "+q.topic;
- }
+localStorage.setItem(
+"mistakes",
+JSON.stringify(mistakes)
+);
 
- document.getElementById("next").classList.remove("hidden");
+document.getElementById("feedback").innerHTML=
+"<span class='bad'>❌ إجابة غير صحيحة.</span><br>"+
+"الإجابة الصحيحة هي: <b>"+
+q.options[q.answer]+
+"</b><br>"+
+"📌 الموضوع الذي يحتاج إلى مراجعة: "+
+q.topic;
 
- updateMastery();
 }
+
+document.getElementById("next")
+.classList.remove("hidden");
+
+updateMastery();
+
+}
+
 
 function nextQuestion(){
 
- current++;
+current++;
 
- if(current>=questions.length){
-   finish();
-   return;
- }
+if(current>=questions.length){
 
- showQuestion();
+finish();
+
+return;
+
 }
+
+showQuestion();
+
+}
+
 
 function finish(){
 
- document.getElementById("question").textContent="🎉 انتهى الاختبار";
+document.getElementById("question")
+.textContent="🎉 انتهى الاختبار";
 
- document.getElementById("options").innerHTML=
- "<p>نتيجتك: <b>"+score+" / "+questions.length+"</b></p>";
+document.getElementById("options").innerHTML=
+"<p>نتيجتك: <b>"+
+score+" / "+questions.length+
+"</b></p>";
 
- document.getElementById("feedback").innerHTML=
- "سأستخدم أخطاءك لتحديد المواضيع التي تحتاج إلى مراجعة.";
+document.getElementById("feedback").innerHTML=
+"تم تسجيل نتيجة الاختبار.";
 
- document.getElementById("next").classList.add("hidden");
+document.getElementById("next")
+.classList.add("hidden");
 
- showWeakTopics();
- updateMastery();
+showWeakTopics();
+
+updateMastery();
+
 }
+
 
 function showWeakTopics(){
 
- let list=Object.keys(mistakes);
+let list=Object.keys(mistakes);
 
- let text=list.length
- ? list.map(x=>"🔴 "+x+" — أخطاء: "+mistakes[x]).join("<br>")
- : "🟢 لا توجد نقاط ضعف مسجلة حتى الآن.";
+let text=list.length
+?
+list.map(x=>
+"🔴 "+x+" — أخطاء: "+mistakes[x]
+).join("<br>")
+:
+"🟢 لا توجد نقاط ضعف مسجلة حتى الآن.";
 
- document.getElementById("weak").innerHTML=text;
- document.getElementById("review").classList.remove("hidden");
+document.getElementById("weak").innerHTML=text;
+
+document.getElementById("review")
+.classList.remove("hidden");
+
 }
+
 
 function updateMastery(){
 
- let total=questions.length;
+let total=questions.length;
 
- let percentage=Math.round((score/total)*100);
+let percentage=
+Math.round((score/total)*100);
 
- document.getElementById("mastery").textContent=percentage+"%";
+document.getElementById("mastery")
+.textContent=percentage+"%";
 
- document.getElementById("fill").style.width=percentage+"%";
+document.getElementById("fill")
+.style.width=percentage+"%";
+
+}
+
+
+/* =========================
+   المحادثة الذكية
+========================= */
+
+function sendMessage(){
+
+let input=
+document.getElementById("chatInput");
+
+let text=input.value.trim();
+
+if(!text)return;
+
+addMessage(text,"user");
+
+input.value="";
+
+setTimeout(()=>{
+
+let reply=getAssistantReply(text);
+
+addMessage(reply,"bot");
+
+},400);
+
+}
+
+
+function addMessage(text,type){
+
+let chat=document.getElementById("chat");
+
+let div=document.createElement("div");
+
+div.className="message "+type;
+
+div.innerHTML=text;
+
+chat.appendChild(div);
+
+chat.scrollTop=chat.scrollHeight;
+
+}
+
+
+/* مساعد تعليمي أساسي */
+
+function getAssistantReply(text){
+
+let t=text.toLowerCase();
+
+
+if(
+t.includes("amoxicillin")||
+t.includes("أموكسيسيلين")||
+t.includes("اموكسيسيلين")
+){
+
+return `
+<b>💊 Amoxicillin</b><br><br>
+
+<b>التصنيف:</b> Penicillin antibiotic<br><br>
+
+<b>Mechanism of Action:</b><br>
+يثبط تصنيع جدار الخلية البكتيرية
+عن طريق الارتباط بـ Penicillin-binding proteins
+وتثبيط عملية بناء الـ peptidoglycan.<br><br>
+
+<b>ملاحظة:</b>
+اختيار المضاد الحيوي يعتمد على نوع العدوى
+وعوامل المريض والحساسية ومقاومة البكتيريا.
+`;
+
+}
+
+
+if(
+t.includes("half-life")||
+t.includes("half life")||
+t.includes("نصف العمر")
+){
+
+return `
+<b>🧬 Half-life</b><br><br>
+
+هو الزمن اللازم لانخفاض تركيز الدواء في البلازما
+إلى 50% من قيمته الأصلية.<br><br>
+
+يُستخدم في فهم مدة بقاء الدواء والمساعدة في تحديد
+الفاصل بين الجرعات.
+`;
+
+}
+
+
+if(
+t.includes("first pass")||
+t.includes("first-pass")||
+t.includes("المرور الأول")
+){
+
+return `
+<b>🧬 First-pass metabolism</b><br><br>
+
+هو استقلاب الدواء قبل وصول جزء منه إلى الدورة
+الجهازية، ويحدث بشكل مهم في الكبد بعد امتصاص
+عدد من الأدوية من الجهاز الهضمي.
+`;
+
+}
+
+
+if(
+t.includes("ir")||
+t.includes("طيف")||
+t.includes("infrared")
+){
+
+return `
+<b>⚗️ IR Spectroscopy</b><br><br>
+
+من الأمثلة المهمة:<br>
+
+O-H غالبًا يظهر نطاقًا واسعًا تقريبًا
+في منطقة 3200–3600 cm⁻¹، مع اختلاف الموضع
+والشكل حسب البيئة الكيميائية.
+<br><br>
+
+C=O يظهر عادة في منطقة أعلى من 1600 cm⁻¹
+وغالبًا قريب من 1650–1750 cm⁻¹ حسب المجموعة.
+`;
+
+}
+
+
+return `
+🤖 فهمت سؤالك.<br><br>
+
+يمكنني مساعدتك في:
+<br>💊 معلومات الأدوية
+<br>🧬 Pharmacokinetics
+<br>⚗️ Medicinal Chemistry
+<br>🧪 أسئلة واختبارات الصيدلة
+<br>📚 شرح المواضيع الصيدلانية
+<br><br>
+
+اكتب مثلًا:
+<b>اشرح لي الأموكسيسيلين</b>
+`;
+
+
+}
+
+
+/* =========================
+   معلومات الأدوية
+========================= */
+
+function showDrugInfo(){
+
+hideAll();
+
+document.getElementById("drugSection")
+.classList.remove("hidden");
+
+}
+
+
+/* =========================
+   الدراسة
+========================= */
+
+function showStudy(){
+
+hideAll();
+
+document.getElementById("studySection")
+.classList.remove("hidden");
+
+}
+
+
+function studyTopic(topic){
+
+openSection("chat");
+
+let messages={
+"Antibiotics":"أريد أن أدرس Antibiotics خطوة بخطوة.",
+"Pharmacokinetics":"أريد أن أدرس Pharmacokinetics.",
+"Medicinal Chemistry":"أريد أن أدرس Medicinal Chemistry.",
+"Pharmacology":"أريد أن أدرس Pharmacology."
+};
+
+document.getElementById("chatInput").value=
+messages[topic];
+
+sendMessage();
+
 }
 
 </script>
